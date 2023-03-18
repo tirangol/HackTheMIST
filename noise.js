@@ -239,8 +239,8 @@ function apply_threshold() {
 }
 
 function in_bounds(x, y) {
-	if (x < 0 || x >= width -2) return false
-	if (y < 0 || y >= height -2) return false
+	if (x < 0 || x >= width) return false
+	if (y < 0 || y >= height) return false
 	return true
 }
 
@@ -323,6 +323,17 @@ function findxy(res, e) {
     //         draw();
     //     }
     // }
+}
+
+window.normalize=(matrix)=> {
+	console.log(canvas_state)
+	for (var y = 0; y < height; y++) {
+		for (var x = 0; x < width; x++) {
+			// canvas_state[y][x] /= 115; 
+			// console.log(canvas_state[y][x])
+			// console.log(y, x)
+		}
+	}
 }
 
 
