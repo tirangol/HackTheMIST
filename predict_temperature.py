@@ -159,8 +159,8 @@ def predict(net: nn.Module, resolution: tuple[int, int] = (360, 180), flipped_lr
     """Return the net prediction for a copy of the Earth."""
     earth = get_temp_inputs(resolution, False, (flipped_lr, flipped_ud, False))
     prediction = to_array(net(to_tensor(earth)))
-    return prediction
-    # return prediction + temp_offset(resolution, False, flipped_ud=flipped_ud, flipped_lr=flipped_lr)
+    # return prediction
+    return prediction + temp_offset(resolution, False, flipped_ud=flipped_ud, flipped_lr=flipped_lr)
 
 
 def error(net: nn.Module, resolution: tuple[int, int] = (360, 180), i: int = 0) -> np.ndarray:

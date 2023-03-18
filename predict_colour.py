@@ -1,6 +1,6 @@
 """Hack The MIST"""
 
-from main import *
+from predict_temperature import *
 
 
 def import_colours(resolution: tuple[int, int], learning: bool = True) -> np.ndarray:
@@ -22,6 +22,46 @@ def import_colours(resolution: tuple[int, int], learning: bool = True) -> np.nda
     return colours.T
 
 
+def get_inputs_colour(resolution: tuple[int, int], temp_path: str = "temp_parameters",
+                      prec_path: str = "prec_parameters", learning: bool = True) -> np.ndarray:
+    """Return the inputs for the ColourNet."""
+    # Setting up latitude
+    latitude = get_latitude(resolution)
+    latitude_reversed = - np.fliplr(np.flipud(latitude))
+
+    if learning:
+        land = load_land(resolution)
+        land_reversed = np.fliplr(np.flipud(land))
+
+        latitude[land.reshape(np.product(resolution)) == 0] = np.nan
+        latitude_reversed[land_reversed.reshape(np.product(resolution)) == 0] = np.nan
+
+        latitude = remove_na_rows(latitude)
+        latitude_reversed = remove_na_rows(latitude)
+
+    # Set up original world inputs
+    if learning:
+        inputs = get_temp_inputs(resolution, True, (False, False, True))
+    else:
+        inputs = get_temp_inputs(resolution, False, (False, False, False))
+
+    # Load neural nets
+    temp_data = torch.load(temp_path)
+    prec_data = torch.load(prec_path)
+    temp = TemperatureNet()
+    prec = TemperatureNet()
+    temp.load_state_dict(temp_data)
+    prec.load_state_dict(prec_data)
+
+    # Apply neural nets on inputs
+    temperatures = to_array(temp(to_tensor(inputs))) + temp_offset(resolution, learning)
+    precipitation = to_array(prec(to_tensor(inputs)))
+    if learning:
+        return np.c_[temperatures, precipitation, np.r_[latitude, latitude_reversed]]
+    else:
+        return np.c_[temperatures, precipitation, latitude]
+
+
 class ColourNet(nn.Module):
     """Our cool neural network for predicting pixel colour."""
 
@@ -33,8 +73,8 @@ class ColourNet(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Compute a forward pass on the input x."""
-        x = F.softplus(self.f(x))
-        x = self.g(x)
+        x = F.relu(self.f(x))
+        x = 255 * F.sigmoid(self.g(x) / 255)
         return x
 
     def randomize_weights(self) -> None:
@@ -43,11 +83,12 @@ class ColourNet(nn.Module):
         torch.nn.init.xavier_uniform_(self.g.weight, gain=2.0)
 
 
-def learn_colour(inputs: np.ndarray) -> ColourNet:
+def learn_colour() -> ColourNet:
     """Start the neural network's learning."""
     torch.manual_seed(29844)
     resolution = (360, 180)
 
+    inputs = get_inputs_colour(resolution, "temp_parameters", "prec_parameters")
     target = import_colours(resolution)
 
     net = ColourNet()
@@ -58,7 +99,24 @@ def learn_colour(inputs: np.ndarray) -> ColourNet:
     losses = []
     boost_losses = []
     offset = 0
-    offset = gradient_descent(net, inputs, target, 0.001, 0.9, 500, offset, 5000, False,
+    offset = gradient_descent(net, inputs, target, 0.00001, 0.9, 500, offset, 5000, False,
                               losses, boost_losses)
 
     return net
+
+
+def predict_image(net: ColourNet, inputs: Optional[np.ndarray],
+                  resolution: tuple[int, int] = (360, 180)) -> np.ndarray:
+    """Return a prediction of the ColourNet net on a given input."""
+    if inputs is None:
+        inputs = get_inputs_colour(resolution, learning=False)
+    return to_array(net(to_tensor(inputs)))
+
+
+def save_image(img: np.ndarray, filename: str, resolution: tuple[int, int] = (360, 180)) -> None:
+    """Save a matrix of shape (n x 2n x 3) as an RGB image."""
+    w, h = resolution
+    img = img.reshape((h, w, 3))
+    img = np.nan_to_num(img)
+    i = Image.fromarray(np.uint8(img))
+    i.save(filename)

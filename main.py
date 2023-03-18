@@ -1,6 +1,6 @@
 """Hack The MIST"""
 
-from predict_temperature import *
+from predict_colour import *
 
 
 def matrix(elevation: np.ndarray) -> np.ndarray:
@@ -13,7 +13,7 @@ def matrix(elevation: np.ndarray) -> np.ndarray:
 
 
 def temperature_offset(elevation: np.ndarray, latitude: np.ndarray) -> np.ndarray:
-    """Return an offset prediction."""
+    """Return an offset temperature prediction."""
     month = np.repeat(np.arange(0., 12.).reshape(1, 12), latitude.shape, axis=0)
     lat_offset = 70 * np.cos(latitude * np.pi / 180) - 40 - 4 / (np.e ** (latitude ** 2 / 400))
     elev_offset = -19 * elevation / 3000 + 3
@@ -25,8 +25,10 @@ def temperature_offset(elevation: np.ndarray, latitude: np.ndarray) -> np.ndarra
     return lat_offset + elev_offset + month_offset
 
 
-def matrix_to_climate(elevation: np.ndarray, temp_path: str, prec_path: str) -> np.ndarray:
-    """Return a 24-input matrix of monthly temperatures/precipitation. """
+def matrix_to_climate(elevation: np.ndarray, temp_path: str = "temp_parameters",
+                      prec_path: str = "prec_parameters") -> np.ndarray:
+    """Return a (__, 25) matrix of monthly temperatures/precipitation, given elevation matrix."""
+    elevation = matrix(elevation)
     height, width = elevation.shape
     resolution = (width, height)
 
@@ -46,6 +48,28 @@ def matrix_to_climate(elevation: np.ndarray, temp_path: str, prec_path: str) -> 
     prec.load_state_dict(prec_data)
 
     # Apply neural nets on inputs
-    temperatures = temp(inputs) + temperature_offset(elevation, latitude)
-    precipitation = prec(inputs)
+    temperatures = to_array(temp(to_tensor(inputs))) + temperature_offset(elevation, latitude)
+    precipitation = to_array(prec(to_tensor(inputs)))
     return np.c_[temperatures, precipitation, latitude]
+
+
+def climate_to_colour(climate: np.ndarray, colour_path: str = "colour_parameters") -> np.ndarray:
+    """Return a (__ x 3) image of the world map, given the climate matrix."""
+    # Load neural net
+    colour_data = torch.load(colour_path)
+    colour = ColourNet()
+    colour.load_state_dict(colour_data)
+
+    # Apply neural net on input
+    return predict_image(colour, climate)
+
+
+def elevation_to_colour(elevation: np.ndarray, save_img: bool = False,
+                        img_name: str = "output.png") -> np.ndarray:
+    """Main function that, given an elevation matrix of size (n x 2n) where 0 indicates
+    water and >0 indicates land elevation in meters, predicts climate and returns a satellite image
+    RGB (n x 2n x 3) matrix of the hypothetical Earth-like planet."""
+    output = climate_to_colour(matrix_to_climate(elevation))
+    if save_img:
+        save_image(output, img_name)
+    return output
