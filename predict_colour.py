@@ -22,27 +22,32 @@ def import_colours(resolution: tuple[int, int], learning: bool = True) -> np.nda
     return colours.T
 
 
-def get_inputs_colour(resolution: tuple[int, int], temp_path: str = "temp_parameters",
+def get_latitude_learning(resolution: tuple[int, int] = (360, 180)) -> np.ndarray:
+    """Get latitude matrix."""
+    latitude = get_latitude(resolution)
+    latitude_reversed = latitude.copy()
+
+    land = load_land(resolution)
+    land_reversed = np.fliplr(np.flipud(land))
+
+    cols = np.product(resolution)
+    latitude[land.reshape(cols) == 0] = np.nan
+    latitude_reversed[land_reversed.reshape(cols) == 0] = np.nan
+
+    latitude = remove_na_rows(latitude)
+    latitude_reversed = remove_na_rows(latitude)
+    return np.r_[latitude, latitude_reversed]
+
+
+def get_inputs_colour(resolution: tuple[int, int] = (360, 180), temp_path: str = "temp_parameters",
                       prec_path: str = "prec_parameters", learning: bool = True) -> np.ndarray:
     """Return the inputs for the ColourNet."""
     # Setting up latitude
-    latitude = get_latitude(resolution)
-    latitude_reversed = - np.fliplr(np.flipud(latitude))
-
     if learning:
-        land = load_land(resolution)
-        land_reversed = np.fliplr(np.flipud(land))
-
-        latitude[land.reshape(np.product(resolution)) == 0] = np.nan
-        latitude_reversed[land_reversed.reshape(np.product(resolution)) == 0] = np.nan
-
-        latitude = remove_na_rows(latitude)
-        latitude_reversed = remove_na_rows(latitude)
-
-    # Set up original world inputs
-    if learning:
+        latitude = get_latitude_learning(resolution)
         inputs = get_temp_inputs(resolution, True, (False, False, True))
     else:
+        latitude = get_latitude(resolution)
         inputs = get_temp_inputs(resolution, False, (False, False, False))
 
     # Load neural nets
@@ -56,10 +61,7 @@ def get_inputs_colour(resolution: tuple[int, int], temp_path: str = "temp_parame
     # Apply neural nets on inputs
     temperatures = to_array(temp(to_tensor(inputs))) + temp_offset(resolution, learning)
     precipitation = to_array(prec(to_tensor(inputs)))
-    if learning:
-        return np.c_[temperatures, precipitation, np.r_[latitude, latitude_reversed]]
-    else:
-        return np.c_[temperatures, precipitation, latitude]
+    return np.c_[temperatures, precipitation, latitude]
 
 
 class ColourNet(nn.Module):

@@ -14,8 +14,7 @@ def matrix(elevation: np.ndarray) -> np.ndarray:
 
 def temperature_offset(elevation: np.ndarray, latitude: np.ndarray) -> np.ndarray:
     """Return an offset temperature prediction."""
-    # print(latitude.shape)
-    month = np.repeat(np.arange(0., 12.).reshape(1, 12), latitude.shape, axis=0)
+    month = np.repeat(np.arange(0., 12.).reshape(1, 12), latitude.shape[0], axis=0)
     lat_offset = 70 * np.cos(latitude * np.pi / 180) - 40 - 4 / (np.e ** (latitude ** 2 / 400))
     elev_offset = -19 * elevation / 3000 + 3
     month_offset = -np.repeat(latitude.reshape(latitude.shape[0], 1), 12, axis=1) * np.cos(
