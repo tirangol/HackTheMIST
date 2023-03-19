@@ -82,7 +82,7 @@ def retrograde_earth_preset(save_img: bool = False, img_name: str = "earth.png")
     """Function that returns a predicted satellite image RGB (n x 2n x 3) matrix of
     retrograde Earth."""
     resolution = (360, 180)
-    inputs = get_inputs_colour(resolution, retrograde=True)
+    inputs = get_inputs_colour(resolution, learning=False, retrograde=True)
     colour = load_colour_net('colour_parameters')
     output = predict_image(colour, inputs, resolution)
     if save_img:
