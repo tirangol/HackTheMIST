@@ -343,21 +343,44 @@ function normalize() {
 	return canvas_state
 }
 
-async function obtain_colorized() {
+async function obtain_colorized(kind) {
+	// var path;
+	// var normalized_elevations
+	if (kind == "colorize") {
+		console.log("haha")
+		var normalized_elevations = normalize()
+		const path = `http://localhost:5000/predict/colorize`;
+		const res = await fetch(path, {
+			method: 'POST',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(normalized_elevations)
+		});
+	} else if (kind == "retroearth") {
+		const path = `http://localhost:5000/predict/retroearth`;
+		const res = await fetch(path, {
+			method: 'POST',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+		});
+	} else {
+		var normalized_elevations = normalize()
+		const path = `http://localhost:5000/predict/earth`;
+		const res = await fetch(path, {
+			method: 'POST',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+		});
+	}
 
-	var normalized_elevations = normalize()
+	const response = await res.json();
 
-	const path = `http://localhost:5000/predict`;
-    const res = await fetch(path, {
-		method: 'POST',
-		headers: {
-			'Accept': 'application/json',
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify(normalized_elevations)
-	});
-
-    const response = await res.json();
 	// console.log(response)
 
 	var ctx2 = canvas2.getContext("2d");
