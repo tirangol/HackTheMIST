@@ -20,9 +20,13 @@ def make_prediction():
     print(type(event_data))
 
     input = np.array(event_data)
-    print(input.shape)
-    print(input)
-    elevation_to_colour(input, True)
+    # print(input.shape)
+    # print(input)
+    res = elevation_to_colour(input, False)
+
+    res[np.isnan(res)] = 0
+    res = res.reshape(180, 360, 3)
+
     # print(event_data)
     # print("")
-    return jsonify('wowo')
+    return jsonify(res.tolist())

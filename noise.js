@@ -104,6 +104,7 @@ function Noise2D(x, y) {
 
 
 var canvas;
+var canvas2
 var ctx;
 var width;
 var height;
@@ -124,6 +125,7 @@ var threshold_mat;
 
 window.onload = function initialize_things() {
     canvas = document.getElementById('can');
+	canvas2 = document.getElementById('can2')
 	canvas.oncontextmenu = function (e) {
 		e.preventDefault();
 	};
@@ -265,8 +267,8 @@ function draw(sign) {
 	var min_y = scaled_y - stroke;
 	var max_y = scaled_y + stroke;
 
-	console.log(min_x, max_x)
-	console.log(min_y, max_y)
+	// console.log(min_x, max_x)
+	// console.log(min_y, max_y)
 
 	// console.log("poo")
 
@@ -326,7 +328,7 @@ function findxy(res, e) {
 }
 
 function normalize() {
-	console.log(canvas_state)
+	// console.log(canvas_state)
 	for (var y = 0; y < height; y++) {
 		for (var x = 0; x < width; x++) {
 			canvas_state[y][x] /= 115; 
@@ -350,8 +352,26 @@ async function obtain_colorized() {
 		},
 		body: JSON.stringify(normalized_elevations)
 	});
-    const bruh = res.json();
-	console.log(bruh)
+
+    const response = await res.json();
+	// console.log(response)
+
+	var ctx2 = canvas2.getContext("2d");
+
+
+	for (var y = 0; y < height; y++) {
+		for (var x = 0; x < width; x++) {
+			var r = response[y][x][0]
+			var g = response[y][x][1]
+			var b = response[y][x][2]
+
+			var color = `rgba(${r}, ${g}, ${b}, 1)`
+			// console.log(color)
+			ctx2.fillStyle = color
+			// console.log(2*x, 2*y)
+			ctx2.fillRect(scale_factor * x, scale_factor * y, scale_factor, scale_factor)
+		}
+	}
 }
 
 
