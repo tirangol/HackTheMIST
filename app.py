@@ -19,7 +19,7 @@ def make_prediction(type):
     # print("asdfasdf")
     if (type == "colorize"):
         event_data = request.json
-        print(type(event_data))
+        # print(type(event_data))
 
         input = np.array(event_data)
         # print(input.shape)
