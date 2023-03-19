@@ -104,6 +104,7 @@ function Noise2D(x, y) {
 
 
 var canvas;
+var html;
 var canvas2
 var ctx;
 var width;
@@ -124,6 +125,7 @@ var flag = false
 var threshold_mat;
 
 window.onload = function initialize_things() {
+	html = document.documentElement;
     canvas = document.getElementById('can');
 	canvas2 = document.getElementById('can2')
 	canvas.oncontextmenu = function (e) {
@@ -300,6 +302,8 @@ function findxy(res, e) {
         prevY = currY;
         currX = e.clientX - canvas.offsetLeft;
         currY = e.clientY - canvas.offsetTop;
+		currY += document.body.scrollTop 
+		// console.log()
 
         flag = true;
         dot_flag = true;
