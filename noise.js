@@ -114,6 +114,12 @@ var canvas_height;
 var canvas_state;
 var elevation_matrix;
 
+var imageEarth = new Image()
+imageEarth.src = 'test.png'
+
+var imageRetroEarth = new Image()
+imageRetroEarth.src = 'retrograde.png'
+
 var scale_factor;
 
 var prevX = 0
@@ -343,12 +349,24 @@ function normalize() {
 	return canvas_state
 }
 
+
+function show_earth_img() {
+	var ctx2 = canvas2.getContext("2d");
+	ctx2.drawImage(imageEarth, 0, 0, canvas_width, canvas_height)
+}
+
+function show_retro_earth_img() {
+	var ctx2 = canvas2.getContext("2d");
+	ctx2.drawImage(imageRetroEarth, 0, 0, canvas_width, canvas_height)
+}
+
 async function obtain_colorized(kind) {
-	// var path;
 	// var normalized_elevations
-	if (kind == "colorize") {
-		console.log("haha")
+
+	var response;
+	if (kind == 'colorize') {
 		var normalized_elevations = normalize()
+		console.log(normalized_elevations)
 		const path = `http://localhost:5000/predict/colorize`;
 		const res = await fetch(path, {
 			method: 'POST',
@@ -358,47 +376,32 @@ async function obtain_colorized(kind) {
 			},
 			body: JSON.stringify(normalized_elevations)
 		});
+		response = await res.json();
+		var ctx2 = canvas2.getContext("2d");
+
+
+		for (var y = 0; y < height; y++) {
+			for (var x = 0; x < width; x++) {
+				var r = response[y][x][0]
+				var g = response[y][x][1]
+				var b = response[y][x][2]
+
+				var color = `rgba(${r}, ${g}, ${b}, 1)`
+				// console.log(color)
+				ctx2.fillStyle = color
+				// console.log(2*x, 2*y)
+				ctx2.fillRect(scale_factor * x, scale_factor * y, scale_factor, scale_factor)
+			}
+		}
 	} else if (kind == "retroearth") {
-		const path = `http://localhost:5000/predict/retroearth`;
-		const res = await fetch(path, {
-			method: 'POST',
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-			},
-		});
+		show_retro_earth_img();
 	} else {
-		var normalized_elevations = normalize()
-		const path = `http://localhost:5000/predict/earth`;
-		const res = await fetch(path, {
-			method: 'POST',
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-			},
-		});
+		show_earth_img()
 	}
 
-	const response = await res.json();
 
 	// console.log(response)
 
-	var ctx2 = canvas2.getContext("2d");
-
-
-	for (var y = 0; y < height; y++) {
-		for (var x = 0; x < width; x++) {
-			var r = response[y][x][0]
-			var g = response[y][x][1]
-			var b = response[y][x][2]
-
-			var color = `rgba(${r}, ${g}, ${b}, 1)`
-			// console.log(color)
-			ctx2.fillStyle = color
-			// console.log(2*x, 2*y)
-			ctx2.fillRect(scale_factor * x, scale_factor * y, scale_factor, scale_factor)
-		}
-	}
 }
 
 
