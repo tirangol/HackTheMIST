@@ -40,12 +40,8 @@ def matrix_to_climate(elevation: np.ndarray, temp_path: str = "temp_parameters",
     inputs = process_inputs(raw_inputs, (width, height))
 
     # Load neural nets
-    temp_data = torch.load(temp_path)
-    prec_data = torch.load(prec_path)
-    temp = TemperatureNet()
-    prec = TemperatureNet()
-    temp.load_state_dict(temp_data)
-    prec.load_state_dict(prec_data)
+    temp = load_temperature_net(temp_path)
+    prec = load_temperature_net(prec_path)
 
     # Apply neural nets on inputs
     temperatures = to_array(temp(to_tensor(inputs))) + temperature_offset(elevation, latitude)
@@ -56,9 +52,7 @@ def matrix_to_climate(elevation: np.ndarray, temp_path: str = "temp_parameters",
 def climate_to_colour(climate: np.ndarray, colour_path: str = "colour_parameters") -> np.ndarray:
     """Return a (__ x 3) image of the world map, given the climate matrix."""
     # Load neural net
-    colour_data = torch.load(colour_path)
-    colour = ColourNet()
-    colour.load_state_dict(colour_data)
+    colour = load_colour_net(colour_path)
 
     # Apply neural net on input
     return predict_image(colour, climate)
@@ -70,6 +64,27 @@ def elevation_to_colour(elevation: np.ndarray, save_img: bool = False,
     water and >0 indicates land elevation in meters, predicts climate and returns a satellite image
     RGB (n x 2n x 3) matrix of the hypothetical Earth-like planet."""
     output = climate_to_colour(matrix_to_climate(elevation))
+    if save_img:
+        save_image(output, img_name)
+    return output
+
+
+def earth_preset(save_img: bool = False, img_name: str = "earth.png") -> np.ndarray:
+    """Function that returns a predicted satellite image RGB (n x 2n x 3) matrix of Earth."""
+    colour = load_colour_net('colour_parameters')
+    output = predict_image(colour, None)
+    if save_img:
+        save_image(output, img_name)
+    return output
+
+
+def retrograde_earth_preset(save_img: bool = False, img_name: str = "earth.png") -> np.ndarray:
+    """Function that returns a predicted satellite image RGB (n x 2n x 3) matrix of
+    retrograde Earth."""
+    resolution = (360, 180)
+    inputs = get_inputs_colour(resolution, retrograde=True)
+    colour = load_colour_net('colour_parameters')
+    output = predict_image(colour, inputs, resolution)
     if save_img:
         save_image(output, img_name)
     return output

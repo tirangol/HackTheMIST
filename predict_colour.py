@@ -3,6 +3,22 @@
 from predict_temperature import *
 
 
+def load_temperature_net(path: str) -> TemperatureNet:
+    """Return a temperature net based on the path its parameters were saved."""
+    temp_data = torch.load(path)
+    temp = TemperatureNet()
+    temp.load_state_dict(temp_data)
+    return temp
+
+
+def load_colour_net(path: str) -> ColourNet:
+    """Return a temperature net based on the path its parameters were saved."""
+    colour_data = torch.load(path)
+    colour = ColourNet()
+    colour.load_state_dict(colour_data)
+    return colour
+
+
 def import_colours(resolution: tuple[int, int], learning: bool = True) -> np.ndarray:
     """Import colour map."""
     cols = np.product(resolution)
@@ -40,26 +56,26 @@ def get_latitude_learning(resolution: tuple[int, int] = (360, 180)) -> np.ndarra
 
 
 def get_inputs_colour(resolution: tuple[int, int] = (360, 180), temp_path: str = "temp_parameters",
-                      prec_path: str = "prec_parameters", learning: bool = True) -> np.ndarray:
+                      prec_path: str = "prec_parameters", learning: bool = True,
+                      retrograde: bool = False) -> np.ndarray:
     """Return the inputs for the ColourNet."""
     # Setting up latitude
     if learning:
         latitude = get_latitude_learning(resolution)
         inputs = get_temp_inputs(resolution, True, (False, False, True))
+    elif retrograde:
+        latitude = get_latitude(resolution)
+        inputs = get_temp_inputs(resolution, False, (True, False, False))
     else:
         latitude = get_latitude(resolution)
         inputs = get_temp_inputs(resolution, False, (False, False, False))
 
     # Load neural nets
-    temp_data = torch.load(temp_path)
-    prec_data = torch.load(prec_path)
-    temp = TemperatureNet()
-    prec = TemperatureNet()
-    temp.load_state_dict(temp_data)
-    prec.load_state_dict(prec_data)
+    temp = load_temperature_net(temp_path)
+    prec = load_temperature_net(prec_path)
 
     # Apply neural nets on inputs
-    temperatures = to_array(temp(to_tensor(inputs))) + temp_offset(resolution, learning)
+    temperatures = to_array(temp(to_tensor(inputs))) + temp_offset(resolution, learning, retrograde)
     precipitation = to_array(prec(to_tensor(inputs)))
     return np.c_[temperatures, precipitation, latitude]
 
