@@ -3,22 +3,6 @@
 from predict_temperature import *
 
 
-def load_temperature_net(path: str) -> TemperatureNet:
-    """Return a temperature net based on the path its parameters were saved."""
-    temp_data = torch.load(path)
-    temp = TemperatureNet()
-    temp.load_state_dict(temp_data)
-    return temp
-
-
-def load_colour_net(path: str) -> ColourNet:
-    """Return a temperature net based on the path its parameters were saved."""
-    colour_data = torch.load(path)
-    colour = ColourNet()
-    colour.load_state_dict(colour_data)
-    return colour
-
-
 def import_colours(resolution: tuple[int, int], learning: bool = True) -> np.ndarray:
     """Import colour map."""
     cols = np.product(resolution)
@@ -99,6 +83,22 @@ class ColourNet(nn.Module):
         """Randomize parameter weights."""
         torch.nn.init.xavier_uniform_(self.f.weight, gain=2.0)
         torch.nn.init.xavier_uniform_(self.g.weight, gain=2.0)
+
+
+def load_temperature_net(path: str) -> TemperatureNet:
+    """Return a temperature net based on the path its parameters were saved."""
+    temp_data = torch.load(path)
+    temp = TemperatureNet()
+    temp.load_state_dict(temp_data)
+    return temp
+
+
+def load_colour_net(path: str) -> ColourNet:
+    """Return a temperature net based on the path its parameters were saved."""
+    colour_data = torch.load(path)
+    colour = ColourNet()
+    colour.load_state_dict(colour_data)
+    return colour
 
 
 def learn_colour() -> ColourNet:
