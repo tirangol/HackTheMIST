@@ -13,10 +13,11 @@
         <h1>AI Climate Drawer</h1>
         <h3>by Edwin Chen & Richard Yin</h3>
         <hr>
-        <p>Draw a global elevation map for an Earth-like planet below, using left-click to increase elevation and right-click to decrease elevation. The default max elevation is 6500 m. The program will generate an AI-prediction of the planet's satellite imagery.</p>
+        <p>Draw a global elevation map for an Earth-like planet below, using left-click to increase elevation and right-click to decrease elevation. The default max elevation is 6500 m. The program will generate an AI-prediction of the planet's satellite imagery based on a prediction of the planet's climate.</p>
         <p>Made during Hack the MIST, 2023</p>
 
         <script src="noise.js"></script>
+        <center>
         <canvas id="can" width="1080", height="540", style="border:2px solid;"></canvas>
 
         <!-- <canvas id="can2" width="1080", height="540", style="border:2px solid;"></canvas> -->
@@ -39,7 +40,9 @@
         <input type="button" value="Retrograde Earth Preset" size="30">
         <input type="button" value="Colorize!" size="30" id="colorize" onclick="obtain_colorized()">
         <br>
+
         <canvas id="can2", width="1080", height="540", style="border:2px solid;"></canvas>
+        </center>
     </div>
     </body>
 </html>
