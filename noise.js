@@ -183,6 +183,8 @@ function set_random_elevation() {
 			var n = 0.5 * Noise2D(x*0.015, y*0.015);
 			n += 0.25 * Noise2D(x*0.03, y*0.03);
 			n += 0.125 * Noise2D(x*0.08, y*0.08);
+			n += 0.07 * Noise2D(x*0.12, y*0.12);
+			n += 0.07 * Noise2D(x*0.16, y*0.16);
 			// n += 0.05 * Noise2D(x*0.08, y*0.08);
 			// var n = simplex2D(x*0.01, y*0.01);
 			
