@@ -325,16 +325,36 @@ function findxy(res, e) {
     // }
 }
 
-window.normalize=(matrix)=> {
+function normalize() {
 	console.log(canvas_state)
 	for (var y = 0; y < height; y++) {
 		for (var x = 0; x < width; x++) {
-			// canvas_state[y][x] /= 115; 
+			canvas_state[y][x] /= 115; 
 			// console.log(canvas_state[y][x])
 			// console.log(y, x)
 		}
 	}
+	return canvas_state
 }
+
+async function obtain_colorized() {
+
+	var normalized_elevations = normalize()
+
+	const path = `http://localhost:5000/predict`;
+    const res = await fetch(path, {
+		method: 'POST',
+		headers: {
+			'Accept': 'application/json',
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(normalized_elevations)
+	});
+    const bruh = res.json();
+	console.log(bruh)
+}
+
+
 
 
 // module.exports = {
