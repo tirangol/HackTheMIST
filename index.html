@@ -1,9 +1,21 @@
 <html>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mulish&family=Lato&family=Poppins&display=swap" rel="stylesheet">    
+    <link rel="stylesheet" href="index.css">
+    
     <!-- <script src="main.js"></script> -->
     <!-- <script type="module" src="noise.js"></script> -->
     <!-- <script src="https://cdn.skypack.dev/simplex-noise@4.0.0"></script> -->
     <!-- <script type="module" src="./simplex.js"></script> -->
     <body onload="initialize_things()">
+    <div id="mainBox">
+        <h1>AI Climate Drawer</h1>
+        <h3>by Edwin Chen & Richard Yin</h3>
+        <hr>
+        <p>Draw a global elevation map for an Earth-like planet below, using left-click to increase elevation and right-click to decrease elevation. The default max elevation is 6500 m. The program will generate an AI-prediction of the planet's satellite imagery.</p>
+        <p>Made during Hack the MIST, 2023</p>
+
         <script type="module" src="noise.js"></script>
         <canvas id="can" width="1080", height="540", style="border:2px solid;"></canvas>
         <!-- <canvas id="can" width="180" height="90" style="position:absolute;top:10%;left:10%;border:2px solid;"></canvas>
@@ -18,7 +30,11 @@
         <div style="position:absolute;top:22%;left:45%;width:15px;height:15px;background:white;border:2px solid;" id="white" onclick="color(this)"></div>
         <img id="canvasimg" style="position:absolute;top:10%;left:52%;" style="display:none;"> -->
         <br>
-        <input type="button" value="Generate noise" id="btn" size="30" onclick="draw_noise_on_canvas()" >
+        <input type="button" value="Generate Noise" id="btn" size="30" onclick="draw_noise_on_canvas()" >
         <!-- <input type="button" value="clear" id="clr" size="23" onclick="erase()" style="position:absolute;top:55%;left:15%;"> -->
+
+        <input type="button" value="Earth Preset" size="30">
+        <input type="button" value="Retrograde Earth Preset" size="30">
+    </div>
     </body>
     </html>
